@@ -1,0 +1,22 @@
+server:
+  port: 9200
+  servlet:
+    context-path: /myback
+
+spring:
+  datasource:
+    type: com.mysql.cj.jdbc.MysqlDataSource
+    url: jdbc:mysql://localhost:3306/study
+    username: root
+    password: 123
+  sql:
+    init:
+      #启动时需要初始化的建表语句
+      schema-locations: classpath:./sql/schema-mysql.sql
+      # Initialize the datasource with available DDL and DML scripts.
+      continue-on-error: false
+      encoding: utf-8
+      separator: ;
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.log4j2.Log4j2Impl
