@@ -33,7 +33,6 @@ public class ResponseData {
         return new Result<T>().setCode(resultsCode.code).setMsg(resultsCode.message);
     }
 
-
     public static <T> Result<T> error(String mesage) {
         return new Result<T>().setMsg(mesage).setCode(ResultsCode.FAIL);
     }

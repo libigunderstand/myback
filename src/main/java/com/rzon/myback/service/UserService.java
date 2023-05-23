@@ -14,8 +14,7 @@ public interface UserService extends IService<User> {
 
     public List<User> getUserInfo(Map<String, Object> params);
 
-    public Integer addUser(User userInfo);
+    public Integer addUser(User userInfo) throws Exception;
 
-//    public Boolean login(Map<String, Object> userInfo);
-
+    public Map<String, Object> login(User userInfo) throws Exception;
 }

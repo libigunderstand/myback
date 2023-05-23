@@ -3,7 +3,9 @@ package com.rzon.myback.controller;
 import com.rzon.myback.entity.User;
 import com.rzon.myback.model.ResponseData;
 import com.rzon.myback.model.Result;
+import com.rzon.myback.model.ResultsCode;
 import com.rzon.myback.service.UserService;
+import com.rzon.myback.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,11 +22,16 @@ public class UserInfo {
     @Autowired
     private UserService userService;
 
-//    @PostMapping(value = "/login")
-//    public Result login(@RequestBody Map<String, Object> userInfo) {
-//        Boolean log = userService.login(userInfo);
-//        return ResponseData.success(log);
-//    }
+    @PostMapping(value = "/login")
+    public Result login(@RequestBody User userInfo) throws Exception {
+        Map<String, Object> log = userService.login(userInfo);
+        if (log.get("flag").equals(false)){
+            return ResponseData.error(log.get("msg").toString());
+        }
+        String token = JwtUtil.getToken(userInfo);
+        log.put("token", token);
+        return ResponseData.success(log);
+    }
 
     @GetMapping("/info")
     public Result<List<User>> getUserInfo(@RequestParam Map<String, Object> params) {
@@ -33,14 +40,14 @@ public class UserInfo {
         return ResponseData.success(users);
     }
 
-    @PutMapping("/add")
-    public Result<Boolean> addUser(@RequestBody User userInfo) {
-
+    @PostMapping("/add")
+    public Result<Boolean> addUser(@RequestBody User userInfo) throws Exception {
         Integer index = userService.addUser(userInfo);
-        if (index == 1) {
-            return ResponseData.success(true);
-        }else {
-            return ResponseData.error("用户姓名已存在");
+        if (index == -1) {
+            return ResponseData.error("用户名、密码不能为空");
+        } else if (index == -2) {
+            return ResponseData.error("用户名已存在");
         }
+        return ResponseData.success(true);
     }
 }
