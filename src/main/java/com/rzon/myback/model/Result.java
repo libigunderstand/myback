@@ -17,7 +17,7 @@ public class Result<T> implements Serializable {
     private String msg;
 
     private T data;
-
+    
     private final Map<String, Object> mapdata = new HashMap<String, Object>();
 
     public void Result() {
