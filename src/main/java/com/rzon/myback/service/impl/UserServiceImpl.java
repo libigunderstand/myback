@@ -6,8 +6,10 @@ import com.rzon.myback.entity.User;
 import com.rzon.myback.mapper.UserMapper;
 import com.rzon.myback.service.UserService;
 import com.rzon.myback.utils.AesUtil;
+import com.rzon.myback.utils.JwtUtil;
 import com.sun.istack.internal.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -20,6 +22,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private RedisTemplate<Object,Object> redisTemplate;
+
     @Override
     public List<User> getUserInfo(Map<String, Object> params) {
         List<User> users;
@@ -35,17 +41,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Integer addUser(@NotNull User userInfo) {
-        if(userInfo.getUsername() == null || userInfo.getPassword() == null) {
+    public Integer addUser(User userInfo) {
+        if(userInfo.getTickname().isEmpty() || userInfo.getPassword().isEmpty()) {
             return -1;
         }
         QueryWrapper<User> query = new QueryWrapper<>();
-        query.eq("username", userInfo.getUsername());
+        query.eq("tickname", userInfo.getTickname());
         List<User> users = userMapper.selectList(query);
         if (users == null || users.size() == 0) {
             try {
                 String encrypedPwd = AesUtil.encryptDO(userInfo.getPassword());
                 userInfo.setPassword(encrypedPwd);
+                if(userInfo.getGender() == null) {
+                    userInfo.setGender(0);
+                }
                 return userMapper.insert(userInfo);
             }catch (Exception ex) {
                 System.out.println(ex.getMessage());
@@ -60,14 +69,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Map<String, Object> login(User userInfo) throws Exception {
         Map<String, Object> data = new HashMap<>();
-        if(userInfo.getUsername() == null || userInfo.getPassword() == null) {
+        if(userInfo.getTickname() == null || userInfo.getPassword() == null) {
             data.put("flag", false);
             data.put("msg", "用户名、密码不能为空");
             return data;
         }
 
         QueryWrapper<User> query = new QueryWrapper<>();
-        query.eq("username", userInfo.getUsername());
+        query.eq("tickname", userInfo.getTickname());
         User user = userMapper.selectOne(query);
         if (user == null) {
             data.put("flag", false);
@@ -75,6 +84,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return data;
         } else {
             if(user.getPassword().equals(AesUtil.encryptDO(userInfo.getPassword()))) {
+                String token = JwtUtil.getToken(user);
+                redisTemplate.opsForValue().set(user.getId(), token);
+                data.put("token", token);
                 data.put("flag", true);
                 data.put("msg", "登录成功");
                 return data;

@@ -41,8 +41,9 @@ public class JwtUtil {
         instance.add(Calendar.DATE, 7);
 
         JWTCreator.Builder builder = JWT.create();
+
         builder.withClaim("userId", u.getId())
-                .withClaim("username", u.getUsername());
+                .withClaim("username", u.getTickname());
 
         SecretKey key = generalKey();
         return builder.withExpiresAt(instance.getTime())
@@ -52,9 +53,11 @@ public class JwtUtil {
     /**
      * 验证token合法性 成功返回token
      */
-    public static DecodedJWT verify(String token) throws Exception {
+    public static String verify(String token) throws Exception {
         SecretKey key = generalKey();
-        JWTVerifier build = JWT.require(Algorithm.HMAC256(key.getEncoded())).build();
-        return build.verify(token);
+        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(key.getEncoded())).build();
+        DecodedJWT decodedJWT = jwtVerifier.verify(token);
+        System.out.println(decodedJWT.getClaim("userId").asString());
+        return decodedJWT.getClaim("userId").asString();
     }
 }

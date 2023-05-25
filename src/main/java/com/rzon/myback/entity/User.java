@@ -1,28 +1,34 @@
 package com.rzon.myback.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+import com.sun.istack.internal.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.sql.Date;
 
 /**
  * @author pc
  */
 @Data
-@TableName("user_info")
-public class User implements Serializable {
-    @TableId(value = "id", type = IdType.AUTO)
-    private Integer id;
+@NoArgsConstructor
+@TableName("user")
+public class User extends Base implements Serializable {
 
-    private String name;
+    @NotNull
+    @TableId(value = "id", type = IdType.ASSIGN_UUID)
+    private String id;
 
     private String username;
+
+    private String tickname;
 
     private String password;
 
     private Integer age;
 
     private Integer gender;
+
 }

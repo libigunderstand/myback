@@ -3,9 +3,7 @@ package com.rzon.myback.controller;
 import com.rzon.myback.entity.User;
 import com.rzon.myback.model.ResponseData;
 import com.rzon.myback.model.Result;
-import com.rzon.myback.model.ResultsCode;
 import com.rzon.myback.service.UserService;
-import com.rzon.myback.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,8 +26,6 @@ public class UserInfo {
         if (log.get("flag").equals(false)){
             return ResponseData.error(log.get("msg").toString());
         }
-        String token = JwtUtil.getToken(userInfo);
-        log.put("token", token);
         return ResponseData.success(log);
     }
 

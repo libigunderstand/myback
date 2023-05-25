@@ -4,9 +4,12 @@ import com.auth0.jwt.exceptions.AlgorithmMismatchException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rzon.myback.entity.User;
 import com.rzon.myback.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +23,9 @@ import java.util.Map;
 @Slf4j
 public class JwtInterceptor implements HandlerInterceptor {
 
+    @Autowired
+    private RedisTemplate<Object, Object> redisTemplate;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         Map<String, Object> map = new HashMap<>();
@@ -29,8 +35,15 @@ public class JwtInterceptor implements HandlerInterceptor {
             map.put("msg","token为空");
         }else {
             try {
-                JwtUtil.verify(token);//验证令牌
-                return true;//放行请求
+                String userId = JwtUtil.verify(token);//验证令牌
+//                System.out.println(userId);
+                Object hasToken = redisTemplate.opsForValue().get(userId);
+//                if(hasToken != null) {
+//
+//                }else {
+//                    map.put("msg", "拦截器拦截:无效签名");
+//                }
+                return true;
             } catch (SignatureVerificationException e) {
                 e.printStackTrace();
                 map.put("msg","拦截器拦截:无效签名");
