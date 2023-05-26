@@ -7,10 +7,13 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.rzon.myback.entity.User;
 import org.apache.commons.codec.binary.Base64;
+import org.bouncycastle.crypto.prng.RandomGenerator;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Calendar;
+import java.util.Random;
+import java.util.UUID;
 
 /**
  * @author admin
@@ -42,8 +45,12 @@ public class JwtUtil {
 
         JWTCreator.Builder builder = JWT.create();
 
+        String id = UUID.randomUUID().toString();
+        String uuid = id.replaceAll("-", "");
+
         builder.withClaim("userId", u.getId())
-                .withClaim("username", u.getTickname());
+                .withClaim("username", u.getTickname())
+                .withClaim("uuid", uuid);
 
         SecretKey key = generalKey();
         return builder.withExpiresAt(instance.getTime())
@@ -53,11 +60,19 @@ public class JwtUtil {
     /**
      * 验证token合法性 成功返回token
      */
-    public static String verify(String token) throws Exception {
+    public static DecodedJWT verify(String token) throws Exception {
+        SecretKey key = generalKey();
+        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(key.getEncoded())).build();
+        return jwtVerifier.verify(token);
+    }
+
+    /**
+     * 根据key获取payload信息
+     */
+    public static String getPayload(String token, String keyword) throws Exception {
         SecretKey key = generalKey();
         JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(key.getEncoded())).build();
         DecodedJWT decodedJWT = jwtVerifier.verify(token);
-        System.out.println(decodedJWT.getClaim("userId").asString());
-        return decodedJWT.getClaim("userId").asString();
+        return decodedJWT.getClaim(keyword).asString();
     }
 }

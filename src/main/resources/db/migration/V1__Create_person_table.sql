@@ -28,7 +28,7 @@ CREATE TABLE `user` (
     `username` varchar(100) NOT NULL,
     `age` int(20) DEFAULT NULL,
     `gender` int(20) DEFAULT NULL,
-    `crete_time` datetime DEFAULT NULL,
+    `create_time` datetime DEFAULT NULL,
     `update_time` datetime DEFAULT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

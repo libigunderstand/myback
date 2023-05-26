@@ -4,12 +4,11 @@ import com.auth0.jwt.exceptions.AlgorithmMismatchException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rzon.myback.entity.User;
 import com.rzon.myback.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +23,7 @@ import java.util.Map;
 public class JwtInterceptor implements HandlerInterceptor {
 
     @Autowired
-    private RedisTemplate<Object, Object> redisTemplate;
+    public StringRedisTemplate stringRedisTemplate;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -35,15 +34,23 @@ public class JwtInterceptor implements HandlerInterceptor {
             map.put("msg","token为空");
         }else {
             try {
-                String userId = JwtUtil.verify(token);//验证令牌
-//                System.out.println(userId);
-                Object hasToken = redisTemplate.opsForValue().get(userId);
-//                if(hasToken != null) {
-//
-//                }else {
-//                    map.put("msg", "拦截器拦截:无效签名");
-//                }
-                return true;
+                JwtUtil.verify(token);//验证令牌
+
+                String userId = JwtUtil.getPayload(token, "userId"); //获取payload中的用户id
+                String hasToken = stringRedisTemplate.opsForValue().get(userId);
+                if(hasToken != null && !hasToken.isEmpty()) {
+                    String uuidRedis = JwtUtil.getPayload(hasToken, "uuid");
+                    String uuidClient = JwtUtil.getPayload(token, "uuid");
+                    System.out.println(uuidClient);
+                    System.out.println(uuidClient);
+                    if(uuidRedis.equals(uuidClient)) {
+                        return true;
+                    }else {
+                        map.put("msg","账号已在其他设备登录");
+                    }
+                }else {
+                    map.put("msg","账号已在其他设备登录");
+                }
             } catch (SignatureVerificationException e) {
                 e.printStackTrace();
                 map.put("msg","拦截器拦截:无效签名");

@@ -7,9 +7,8 @@ import com.rzon.myback.mapper.UserMapper;
 import com.rzon.myback.service.UserService;
 import com.rzon.myback.utils.AesUtil;
 import com.rzon.myback.utils.JwtUtil;
-import com.sun.istack.internal.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -24,7 +23,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private UserMapper userMapper;
 
     @Autowired
-    private RedisTemplate<Object,Object> redisTemplate;
+    private StringRedisTemplate stringRedisTemplate;
 
     @Override
     public List<User> getUserInfo(Map<String, Object> params) {
@@ -84,8 +83,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return data;
         } else {
             if(user.getPassword().equals(AesUtil.encryptDO(userInfo.getPassword()))) {
+                Boolean hasToken = stringRedisTemplate.hasKey(user.getId());
+                if(Boolean.TRUE.equals(hasToken)) {
+                    stringRedisTemplate.delete(user.getId());
+                }
                 String token = JwtUtil.getToken(user);
-                redisTemplate.opsForValue().set(user.getId(), token);
+                stringRedisTemplate.opsForValue().set(user.getId(), token);
                 data.put("token", token);
                 data.put("flag", true);
                 data.put("msg", "登录成功");
