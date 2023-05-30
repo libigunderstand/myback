@@ -13,6 +13,8 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,14 +37,12 @@ public class JwtInterceptor implements HandlerInterceptor {
         }else {
             try {
                 JwtUtil.verify(token);//验证令牌
-
                 String userId = JwtUtil.getPayload(token, "userId"); //获取payload中的用户id
-                String hasToken = stringRedisTemplate.opsForValue().get(userId);
+                String hasToken = stringRedisTemplate.opsForValue().get(userId); //根据userId获取redis中存储的令牌
                 if(hasToken != null && !hasToken.isEmpty()) {
+                    //校验客户端携带的令牌与redis中的令牌是否一致
                     String uuidRedis = JwtUtil.getPayload(hasToken, "uuid");
                     String uuidClient = JwtUtil.getPayload(token, "uuid");
-                    System.out.println(uuidClient);
-                    System.out.println(uuidClient);
                     if(uuidRedis.equals(uuidClient)) {
                         return true;
                     }else {
