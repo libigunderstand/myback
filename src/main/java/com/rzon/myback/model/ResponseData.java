@@ -41,6 +41,10 @@ public class ResponseData {
         return new Result<T>().setMsg(mesage).setCode(resultsCode.code);
     }
 
+    public static <T> Result<T> error(String mesage, int code) {
+        return new Result<T>().setMsg(mesage).setCode(code);
+    }
+
     public static <T> Result<T> error() {
         return new Result<T>().setCode(ResultsCode.FAIL).setMsg(FAILED);
     }

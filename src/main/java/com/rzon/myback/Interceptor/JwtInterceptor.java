@@ -13,8 +13,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +32,8 @@ public class JwtInterceptor implements HandlerInterceptor {
         String token = request.getHeader("Authorization");
         if(StringUtils.isEmpty(token)) {
             map.put("msg","token为空");
+            map.put("code", 401);//设置状态
+            response.setStatus(401);
         }else {
             try {
                 JwtUtil.verify(token);//验证令牌
@@ -64,12 +64,12 @@ public class JwtInterceptor implements HandlerInterceptor {
                 e.printStackTrace();
                 map.put("msg","拦截器拦截:token无效");
             }
+            map.put("code", 401);//设置状态
+            response.setStatus(401);
         }
-        map.put("code", 401);//设置状态
         map.put("data", null);
         //将map转为json jackson
         String json = new ObjectMapper().writeValueAsString(map);
-        response.setStatus(401);
         response.setContentType("application/json;charset=UTF-8");
         response.getWriter().println(json);
         return false;

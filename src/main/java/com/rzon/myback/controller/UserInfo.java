@@ -5,8 +5,10 @@ import com.rzon.myback.model.ResponseData;
 import com.rzon.myback.model.Result;
 import com.rzon.myback.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +39,7 @@ public class UserInfo {
     }
 
     @PostMapping("/add")
-    public Result<Boolean> addUser(@RequestBody User userInfo) throws Exception {
+    public Result<Boolean> addUser(@Valid @RequestBody User userInfo) throws Exception {
         Integer index = userService.addUser(userInfo);
         if (index == -1) {
             return ResponseData.error("用户名、密码不能为空");
