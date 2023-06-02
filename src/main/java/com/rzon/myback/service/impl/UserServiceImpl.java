@@ -1,7 +1,9 @@
 package com.rzon.myback.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.rzon.myback.entity.User;
 import com.rzon.myback.mapper.UserMapper;
 import com.rzon.myback.service.UserService;
@@ -11,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -89,6 +93,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 }
                 String token = JwtUtil.getToken(user);
                 stringRedisTemplate.opsForValue().set(user.getId(), token);
+
+                LocalDateTime loginTime = LocalDateTime.now();
+                UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+                updateWrapper.eq("id", user.getId());
+                user.setLogin_time(loginTime);
+                userMapper.update(user, updateWrapper);
+
                 data.put("token", token);
                 data.put("flag", true);
                 data.put("msg", "登录成功");
